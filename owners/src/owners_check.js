@@ -98,7 +98,7 @@ class OwnersCheck {
       // approved, so we build the coverage text first.
       this.changedFilenames.forEach(filename => {
         const subtree = fileTreeMap[filename];
-        if (this._hasOwnersApproval(filename, subtree)) {
+        if (this._hasFullOwnersCoverage(filename, subtree)) {
           delete fileTreeMap[filename];
         }
       });
@@ -148,7 +148,7 @@ class OwnersCheck {
   }
 
   /**
-   * Tests whether a file has been approved by an owner.
+   * Tests whether a file has an owner in the reviewer set.
    *
    * Must be called after `init`.
    *
@@ -157,7 +157,7 @@ class OwnersCheck {
    * @param {boolean} isApproved approval status to filter by.
    * @return {boolean} if the file is approved.
    */
-  _hasOwnersReview(filename, subtree, isApproved) {
+  _hasOwnersReviewer(filename, subtree, isApproved) {
     return Object.entries(this.reviewers)
       .filter(([username, approved]) => approved === isApproved)
       .map(([username, approved]) => username)
@@ -165,7 +165,7 @@ class OwnersCheck {
   }
 
   /**
-   * Tests whether a file has been approved by an owner.
+   * Tests whether a file has been approved by at least one owner.
    *
    * Must be called after `init`.
    *
@@ -173,8 +173,21 @@ class OwnersCheck {
    * @param {!OwnersTree} subtree nearest ownership tree to file.
    * @return {boolean} if the file is approved.
    */
-  _hasOwnersApproval(filename, subtree) {
-    return this._hasOwnersReview(filename, subtree, true);
+  _hasSomeOwnersApproval(filename, subtree) {
+    return this._hasOwnersReviewer(filename, subtree, true);
+  }
+
+  /**
+   * Tests whether a file has full owners approval coverage.
+   *
+   * Must be called after `init`.
+   *
+   * @param {!string} filename file to check.
+   * @param {!OwnersTree} subtree nearest ownership tree to file.
+   * @return {boolean} if the file is approved.
+   */
+  _hasFullOwnersCoverage(filename, subtree) {
+    return this._hasSomeOwnersApproval(filename, subtree);
   }
 
   /**
@@ -187,7 +200,7 @@ class OwnersCheck {
    * @return {boolean} if the file is approved.
    */
   _hasOwnersPendingReview(filename, subtree) {
-    return this._hasOwnersReview(filename, subtree, false);
+    return this._hasOwnersReviewer(filename, subtree, false);
   }
 
   /**
