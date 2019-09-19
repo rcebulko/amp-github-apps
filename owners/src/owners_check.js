@@ -15,6 +15,7 @@
  */
 
 const {ReviewerSelection} = require('./reviewer_selection');
+const {OWNER_MODIFIER} = require('./owner');
 
 const GITHUB_CHECKRUN_NAME = 'ampproject/owners-check';
 const EXAMPLE_OWNERS_LINK =
@@ -178,6 +179,20 @@ class OwnersCheck {
   }
 
   /**
+   * Tests whether a file has been approved by all required owners.
+   *
+   * Must be called after `init`.
+   *
+   * @param {!string} filename file to check.
+   * @param {!OwnersTree} subtree nearest ownership tree to file.
+   * @return {boolean} if the file is approved.
+   */
+  _hasAllRequiredOwnersApprovals(filename, subtree) {
+    return subtree.getModifiedFileOwners(filename, OWNER_MODIFIER.REQUIRE)
+        .every(owner => this.reviewers[owner.name])
+  }
+
+  /**
    * Tests whether a file has full owners approval coverage.
    *
    * Must be called after `init`.
@@ -187,7 +202,8 @@ class OwnersCheck {
    * @return {boolean} if the file is approved.
    */
   _hasFullOwnersCoverage(filename, subtree) {
-    return this._hasSomeOwnersApproval(filename, subtree);
+    return this._hasSomeOwnersApproval(filename, subtree) &&
+        this._hasAllRequiredOwnersApprovals(filename, subtree);
   }
 
   /**
