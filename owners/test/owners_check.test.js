@@ -54,8 +54,11 @@ describe('check run', () => {
 
 describe('owners check', () => {
   const sandbox = sinon.createSandbox();
-  let ownersTree
+  let ownersTree;
   let ownersCheck;
+  const requiredRule = new OwnersRule('foo/required/OWNERS.yaml', [
+    new UserOwner('required_reviewer', OWNER_MODIFIER.REQUIRE),
+  ]);
 
   beforeEach(() => {
     ownersTree = new OwnersTree();
@@ -302,11 +305,7 @@ describe('owners check', () => {
     });
 
     it('returns false if a required owner has not given approval', () => {
-      ownersTree.addRule(
-        new OwnersRule('foo/required/OWNERS.yaml', [
-          new UserOwner('required_reviewer', OWNER_MODIFIER.REQUIRE)
-        ])
-      );
+      ownersTree.addRule(requiredRule);
       expect(
         ownersCheck._hasFullOwnersCoverage(
           'foo/required/info.html',
@@ -340,6 +339,7 @@ describe('owners check', () => {
     let coverageText;
 
     beforeEach(() => {
+      ownersTree.addRule(requiredRule);
       const fileTreeMap = ownersCheck.tree.buildFileTreeMap(
         ownersCheck.changedFilenames
       );
@@ -362,6 +362,13 @@ describe('owners check', () => {
       expect(coverageText).toContain('### Current Coverage');
       expect(coverageText).toContain(
         '- **[NEEDS APPROVAL]** extra/script.js _(requested: extra_reviewer)_'
+      );
+    });
+
+    it('shows missing required reviewers', () => {
+      expect(coverageText).toContain('### Current Coverage');
+      expect(coverageText).toContain(
+        '- **[NEEDS APPROVAL]** foo/required/info.html _(required: required_reviewer)_'
       );
     });
   });
