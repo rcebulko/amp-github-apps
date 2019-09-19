@@ -212,7 +212,7 @@ describe('reviewer selection', () => {
       ]);
 
       const reviews = ReviewerSelection.pickReviews(fileTreeMap);
-      const reviewers = reviews.map(([reviewer, files]) => reviewer);
+      const reviewers = Object.keys(reviews);
 
       sandbox.assert.calledThrice(ReviewerSelection._pickBestReview);
       expect(reviewers).toEqual(['child', 'thirdChild', 'rootOwner']);
@@ -226,7 +226,7 @@ describe('reviewer selection', () => {
       ]);
 
       const reviews = ReviewerSelection.pickReviews(fileTreeMap);
-      const reviewers = reviews.map(([reviewer, files]) => reviewer);
+      const reviewers = Object.keys(reviews);
 
       expect(reviewers).toContain('child', 'thirdChild');
       expect(reviewers).not.toContain('rootOwner');

@@ -80,6 +80,13 @@ let OwnersCheckResult;
  */
 let ReviewerApprovalMap;
 
+/**
+ * A map from reviewer usernames to files they should review.
+ *
+ * @typedef {!Object<!string, string[]>}
+ */
+let ReviewSuggestions;
+
 module.exports = {
   FileTreeMap,
   Logger,
@@ -88,4 +95,5 @@ module.exports = {
   FileRef,
   OwnersCheckResult,
   ReviewerApprovalMap,
+  ReviewSuggestions,
 };

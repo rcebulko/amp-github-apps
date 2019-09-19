@@ -154,11 +154,10 @@ class ReviewerSelection {
    *
    * @throws {Error} if the algorithm fails to select reviewers.
    * @param {!FileTreeMap} fileTreeMap map from filenames to ownership subtrees.
-   * @return {ReviewerFiles[]} list of reviewers and the files they cover, in
-   *     decreasing order of ownership depth.
+   * @return {ReviewSuggestions} map from reviewers to the files they cover.
    */
   static pickReviews(fileTreeMap) {
-    const reviews = [];
+    const reviews = {};
 
     while (Object.entries(fileTreeMap).length) {
       const bestReview = this._pickBestReview(fileTreeMap);
@@ -168,7 +167,7 @@ class ReviewerSelection {
       }
 
       const [bestReviewer, coveredFiles] = bestReview;
-      reviews.push([bestReviewer, coveredFiles]);
+      reviews[bestReviewer] = coveredFiles;
       coveredFiles.forEach(filename => {
         delete fileTreeMap[filename];
       });

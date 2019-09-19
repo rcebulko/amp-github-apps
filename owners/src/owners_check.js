@@ -120,7 +120,7 @@ class OwnersCheck {
           delete fileTreeMap[filename];
         }
       });
-      const reviewSuggestions = ReviewerSelection.pickReviews(fileTreeMap);
+      const reviewSuggestions = Object.entries(ReviewerSelection.pickReviews(fileTreeMap));
       const reviewers = reviewSuggestions.map(([reviewer, files]) => reviewer);
       const suggestionsText = this.buildReviewSuggestionsText(
         reviewSuggestions
