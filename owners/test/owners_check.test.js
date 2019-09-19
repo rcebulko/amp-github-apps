@@ -20,7 +20,7 @@ const {
   CheckRunConclusion,
   OwnersCheck,
 } = require('../src/owners_check');
-const {UserOwner} = require('../src/owner');
+const {UserOwner, OWNER_MODIFIER} = require('../src/owner');
 const {OwnersTree} = require('../src/owners_tree');
 const {OwnersRule} = require('../src/rules');
 const {ReviewerSelection} = require('../src/reviewer_selection');
@@ -54,10 +54,11 @@ describe('check run', () => {
 
 describe('owners check', () => {
   const sandbox = sinon.createSandbox();
+  let ownersTree
   let ownersCheck;
 
   beforeEach(() => {
-    const ownersTree = new OwnersTree();
+    ownersTree = new OwnersTree();
     [
       new OwnersRule('OWNERS.yaml', [new UserOwner('root_owner')]),
       new OwnersRule('foo/OWNERS.yaml', [
@@ -81,6 +82,11 @@ describe('owners check', () => {
           // approver, some_user, root_owner
           filename: 'foo/test.js',
           sha: '_sha1_',
+        },
+        {
+          // approver, some_user, root_owner
+          filename: 'foo/required/info.html',
+          sha: '_sha5_',
         },
         {
           // other_approver, root_owner
@@ -119,6 +125,7 @@ describe('owners check', () => {
       sandbox.assert.calledWith(ownersCheck.tree.buildFileTreeMap, [
         'main.js',
         'foo/test.js',
+        'foo/required/info.html',
         'bar/baz/file.txt',
         'buzz/README.md',
         'extra/script.js',
@@ -290,6 +297,20 @@ describe('owners check', () => {
         ownersCheck._hasFullOwnersCoverage(
           'baz/README.md',
           ownersCheck.tree.atPath('baz/README.md')
+        )
+      ).toBe(false);
+    });
+
+    it('returns false if a required owner has not given approval', () => {
+      ownersTree.addRule(
+        new OwnersRule('foo/required/OWNERS.yaml', [
+          new UserOwner('required_reviewer', OWNER_MODIFIER.REQUIRE)
+        ])
+      );
+      expect(
+        ownersCheck._hasFullOwnersCoverage(
+          'foo/required/info.html',
+          ownersCheck.tree.atPath('foo/required/info.html')
         )
       ).toBe(false);
     });
