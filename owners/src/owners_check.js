@@ -94,11 +94,14 @@ class OwnersCheck {
     try {
       const fileTreeMap = this.tree.buildFileTreeMap(this.changedFilenames);
       const coverageText = this.buildCurrentCoverageText(fileTreeMap);
+      const reviewSuggestions = {};
+      const pendingReviewers = Object.entries(this.reviewers)
+          .filter(([reviewer, approval]) => !approval)
+          .map(([reviewer, approval]) => reviewer);
 
       // Note: This starts removing files from the fileTreeMap that are already
       // approved, so we build the coverage text first.
-      this.changedFilenames.forEach(filename => {
-        const subtree = fileTreeMap[filename];
+      Object.entries(fileTreeMap).forEach(([filename, subtree]) => {
         if (this._hasFullOwnersCoverage(filename, subtree)) {
           delete fileTreeMap[filename];
         }
@@ -116,16 +119,37 @@ class OwnersCheck {
         };
       }
 
+      // Add pending reviewers to the recommendation set.
+      pendingReviewers.forEach(name => {
+        reviewSuggestions[name] = [];
+      });
       Object.entries(fileTreeMap).forEach(([filename, subtree]) => {
-        if (this._hasOwnersPendingReview(filename, subtree)) {
-          delete fileTreeMap[filename];
+        pendingReviewers
+            .filter(name => subtree.fileHasOwner(filename, name))
+            .forEach(name => {
+              delete fileTreeMap[filename];
+              reviewSuggestions[name].push(filename);
+            });
+      });
+
+      // Merge the results of reviewer selection into the existing suggestions
+      // from pending reviewers.
+      Object.entries(
+        ReviewerSelection.pickReviews(fileTreeMap)
+      ).forEach(([reviewer, coveredFiles]) => {
+        if (reviewSuggestions[reviewer]) {
+          reviewSuggestions[reviewer].push(...coveredFiles);
+        } else {
+          reviewSuggestions[reviewer] = coveredFiles;
         }
       });
-      const reviewSuggestions = Object.entries(ReviewerSelection.pickReviews(fileTreeMap));
-      const reviewers = reviewSuggestions.map(([reviewer, files]) => reviewer);
+
       const suggestionsText = this.buildReviewSuggestionsText(
-        reviewSuggestions
+        Object.entries(reviewSuggestions)
       );
+      const reviewers = Object.keys(reviewSuggestions)
+          .filter(name => !pendingReviewers.includes(name));
+
       return {
         checkRun: new CheckRun(
           CheckRunConclusion.ACTION_REQUIRED,
