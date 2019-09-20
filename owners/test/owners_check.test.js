@@ -342,17 +342,6 @@ describe('owners check', () => {
     });
   });
 
-  describe('hasOwnersPendingReview', () => {
-    it('returns true if there are reviewers that have not yet approved', () => {
-      expect(
-        ownersCheck._hasOwnersPendingReview(
-          'extra/script.js',
-          ownersCheck.tree.atPath('extra/script.js')
-        )
-      ).toBe(true);
-    });
-  });
-
   describe('buildCurrentCoverageText', () => {
     let coverageText;
 

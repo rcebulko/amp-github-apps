@@ -231,19 +231,6 @@ class OwnersCheck {
   }
 
   /**
-   * Tests whether a file has been approved by an owner.
-   *
-   * Must be called after `init`.
-   *
-   * @param {!string} filename file to check.
-   * @param {!OwnersTree} subtree nearest ownership tree to file.
-   * @return {boolean} if the file is approved.
-   */
-  _hasOwnersPendingReview(filename, subtree) {
-    return this._hasOwnersReviewer(filename, subtree, false);
-  }
-
-  /**
    * Determines missing required reviews.
    *
    * @param {!string} filename file to check.
