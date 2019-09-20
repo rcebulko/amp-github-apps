@@ -151,7 +151,7 @@ class TeamOwner extends Owner {
    * @return {boolean} true if this team owner has the username.
    */
   includes(username) {
-    return this.team.members.includes(username);
+    return username === this.name || this.team.members.includes(username);
   }
 
   /**

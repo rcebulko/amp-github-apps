@@ -92,12 +92,16 @@ describe('owner team', () => {
   });
 
   describe('includes', () => {
+    it('returns true for the team name', () => {
+      expect(owner.includes('ampproject/my_team')).toBe(true);
+    });
+
     it('returns true for a username in the team', () => {
       expect(owner.includes('auser')).toBe(true);
       expect(owner.includes('anothermember')).toBe(true);
     });
 
-    it('returns true for a username in the team', () => {
+    it('returns false for a username not in the team', () => {
       expect(owner.includes('someoneelse')).toBe(false);
     });
   });
