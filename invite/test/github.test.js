@@ -120,4 +120,18 @@ describe('GitHub interface', () => {
       done();
     });
   });
+
+  describe('assignIssue', () => {
+    it('POSTs assignee to /repos/:owner/:repo/issues/:issue_number/assignees',
+        async done => {
+      nock('https://api.github.com')
+        .post('/repos/test_org/test_repo/issues/1337/assignees', body => {
+          expect(body).toEqual({ assignees: ['someone'] });
+        })
+        .reply(200);
+
+      await github.addAssignee('test_repo', 1337, 'someone');
+      done();
+    });
+  });
 });

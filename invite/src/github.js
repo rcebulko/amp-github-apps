@@ -64,6 +64,18 @@ class GitHub {
     // https://octokit.github.io/rest.js/#octokit-routes-issues-create-comment
     // octokit.issues.createComment({owner, repo, issue_number, body})
   }
+
+  /**
+   * Assigns an issue to a user.
+   *
+   * @param {string} repo repository name.
+   * @param {number} issue GitHub issue number.
+   * @param {string} assignee username to assign.
+   */
+  async assignIssue(repo, issue, assignee) {
+    // https://octokit.github.io/rest.js/#octokit-routes-issues-add-assignee
+    // octokit.issues.addAssignees({owner, repo, issue_number, assignees})
+  }
 }
 
 module.exports = {GitHub};
