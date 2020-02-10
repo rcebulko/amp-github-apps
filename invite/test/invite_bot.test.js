@@ -28,7 +28,7 @@ describe('Invite Bot', () => {
     jest.spyOn(inviteBot.record, 'recordInvite');
   });
 
-  afterEarch(() => {
+  afterEach(() => {
     jest.restoreAllMocks();
   });
 

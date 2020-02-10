@@ -35,14 +35,30 @@ class InviteBot {
    *
    * @param {!octokit.Octokit} client GitHub API client.
    * @param {string} org GitHub organization.
-   * @param {!Datastore} datastore Google Cloud datastore.
    * @param {Logger} logger logging interface.
    */
-  constructor(client, org, datastore, logger = console) {
+  constructor(client, org, logger = console) {
     this.github = new GitHub(client, org, logger);
-    this.record = new InvitationRecord(datastore, logger);
+    this.record = new InvitationRecord(logger);
     this.logger = logger;
   }
+
+  /**
+   * Process a comment by identifying and acting on any macros present.
+   *
+   * @param {string} repo repository the comment is on
+   * @param {number} issue_number GitHub issue/PR number.
+   * @param {string} comment comment body to process.
+   */
+  processComment(repo, issue_number, comment) {}
+
+  /**
+   * Process an accepted invite by adding comments and assigning issues.
+   *
+   * @param {string} repo repository the comment is on
+   * @param {strintg} username user who accepted an invite.
+   */
+  processAcceptedInvite(repo, username) {}
 
   /**
    * Parses a comment for invitation macros.
@@ -50,7 +66,7 @@ class InviteBot {
    * @param {string} comment comment body to parse.
    * @return {!Object<string, InviteAction>} map of parsed users and actions.
    */
-  parseMacros() {
+  parseMacros(comment) {
     return {};
   }
 
