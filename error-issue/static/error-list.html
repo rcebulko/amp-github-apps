@@ -120,5 +120,10 @@
       </a>
     </section>
   {{/errorReports}}
+  {{^errorReports}}
+    <h2>
+      There are no untracked errors occurring at least {{serviceTypeThreshold}}x/day in {{currentServiceType}}
+    </h2>
+  {{/errorReports}}
 </body>
 </html>
