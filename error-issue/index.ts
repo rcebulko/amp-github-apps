@@ -24,7 +24,10 @@ import {
 import {ErrorIssueBot} from './src/bot';
 import {ErrorReport, ServiceGroupType} from 'error-issue-bot';
 import {StackdriverApi} from './src/stackdriver_api';
+import {formatDate} from './src/utils';
+import Mustache from 'mustache';
 import express from 'express';
+import fs from 'fs';
 import querystring from 'querystring';
 import statusCodes from 'http-status-codes';
 
@@ -35,6 +38,9 @@ const PROJECT_ID = process.env.PROJECT_ID || 'amp-error-reporting';
 const MIN_FREQUENCY = Number(process.env.MIN_FREQUENCY || 2500);
 const ALL_SERVICES = 'ALL SERVICES';
 const VALID_SERVICE_TYPES = [ALL_SERVICES].concat(Object.keys(ServiceName));
+const ERROR_LIST_TEMPLATE = fs
+  .readFileSync('./static/error-list.html')
+  .toString();
 
 const bot = new ErrorIssueBot(
   GITHUB_ACCESS_TOKEN,
@@ -182,7 +188,7 @@ export async function errorList(
   // - end-user sets an exact threshold for the view they are on, and that is
   //   the value used to filter
   // If both are specified, the exact threshold takes precedence.
-  const {threshold, normalizedThreshold} = req.query;
+  const {json, threshold, normalizedThreshold} = req.query;
   // If a valid serviceType param is provided, such as "nightly" or
   // "production", filter to that service group.
   const serviceType = (req.query.serviceType || ALL_SERVICES)
@@ -196,7 +202,7 @@ export async function errorList(
       Number(normalizedThreshold)
     );
     const reports = await lister.newErrorsToReport();
-    res.json({
+    const errorList = {
       serviceType,
       serviceTypeThreshold: Math.ceil(lister.minFrequency),
       normalizedThreshold: Math.ceil(lister.normalizedMinFrequency),
@@ -205,11 +211,41 @@ export async function errorList(
         return {
           createUrl,
           createAndLinkUrl: `${createUrl}&linkIssue=1`,
+          message: report.stacktrace.split('\n', 1)[0],
           ...report,
         };
       }),
-    });
+    };
+
+    if (json) {
+      res.json(errorList);
+    } else {
+      const serviceTypeList = VALID_SERVICE_TYPES.map(name => {
+        return {
+          formattedName:
+            name.charAt(0).toUpperCase() + name.substr(1).toLowerCase(),
+          selected: name === serviceType ? 'selected' : '',
+        };
+      });
+      const currentServiceType = serviceTypeList.filter(
+        ({selected}) => selected
+      )[0].formattedName;
+
+      const viewData = Object.assign(errorList, {
+        currentServiceType,
+        serviceTypeList,
+        errorReports: errorList.errorReports.map((report: ErrorReport) => {
+          const {firstSeen, dailyOccurrences} = report;
+          return Object.assign({}, report, {
+            firstSeen: formatDate(new Date(firstSeen)),
+            dailyOccurrences: dailyOccurrences.toLocaleString('en-US'),
+          });
+        }),
+      });
+      res.send(Mustache.render(ERROR_LIST_TEMPLATE, viewData));
+    }
   } catch (error) {
+    console.error(error);
     res.status(statusCodes.INTERNAL_SERVER_ERROR);
     res.json({error: error.toString()});
   }
