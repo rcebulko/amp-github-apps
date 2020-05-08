@@ -1,7 +1,7 @@
 <!doctype html>
 <html ⚡>
 <head>
-  <title>Top Errors in {{currentServiceType}}</title>
+  <title>Top Errors in {{currentServiceType.formattedName}}</title>
 
   <style>
     body {
@@ -19,21 +19,35 @@
     ul {
       margin: 0;
     }
-    button {
+    button,
+    .threshold-form input[name=threshold]  {
       background-color: #fff;
       border: 2px solid #d9edff;
       border-radius: 20px;
       color: #339dff;
-      cursor: pointer;
       display: inline-block;
       font-size: 16px;
       margin: 5px;
       padding: 10px 20px;
+    }
+    button {
+      cursor: pointer;
       text-align: center;
       text-decoration: none;
     }
     button:focus {
       outline: none;
+    }
+    .threshold-form {
+      display: inline-block;
+    }
+    .threshold-form input[name=threshold] {
+      width: 75px;
+      text-align: center;
+    }
+    .threshold-form button[type=submit] {
+      border-radius: 0 20px 20px 0;
+      margin-left: -30px;
     }
     .error-report {
       border: 2px solid #e7e7e7;
@@ -48,7 +62,7 @@
       pointer-events: none;
     }
     .button-service[selected] button,
-    .button-create {
+    .button-blue {
       background-color: #339dff;
       color: white;
     }
@@ -76,18 +90,28 @@
 </head>
 <body>
   <header>
-    <h1 class="service-type">Top Errors in {{currentServiceType}}</h1>
+    <h1 class="service-type">Top Errors in {{currentServiceType.formattedName}}</h1>
     <p>
       All listed errors occur at least {{serviceTypeThreshold}}x/day, which is the equivalent of {{normalizedThreshold}}x/day in production.
     </p>
-    <b>Other service types:</b>
+
+    <strong>Other service types:</strong>
     {{#serviceTypeList}}
-    <a href="?serviceType={{formattedName}}&normalizedThreshold={{normalizedThreshold}}"
+    <a href="?serviceType={{name}}&normalizedThreshold={{normalizedThreshold}}"
       class="button-service"
       {{selected}}>
       <button>{{formattedName}}</button>
     </a>
     {{/serviceTypeList}}
+
+    <br>
+    <strong>Frequency threshold:</strong>
+    <form method="GET" class="threshold-form">
+      <input type="number" name="threshold" value="{{serviceTypeThreshold}}">
+      <input type="hidden" name="serviceType" value="{{currentServiceType.name}}">
+      <button type="submit" class="button-blue">Update</button>
+    </form>
+    <a href="?serviceType={{currentServiceType.name}}"><button>Reset</button></a>
   </header>
 
   {{#errorReports}}
@@ -116,13 +140,13 @@
       <pre class="stacktrace">{{stacktrace}}</pre>
 
       <a target="_blank" href="{{createAndLinkUrl}}" >
-        <button class="button-create">Create issue</button>
+        <button class="button-blue button-create">Create issue</button>
       </a>
     </section>
   {{/errorReports}}
   {{^errorReports}}
     <h2>
-      There are no untracked errors occurring at least {{serviceTypeThreshold}}x/day in {{currentServiceType}}
+      There are no untracked errors occurring at least {{serviceTypeThreshold}}x/day in {{currentServiceType.formattedName}}
     </h2>
   {{/errorReports}}
 </body>

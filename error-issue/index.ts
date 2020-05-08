@@ -222,14 +222,17 @@ export async function errorList(
     } else {
       const serviceTypeList = VALID_SERVICE_TYPES.map(name => {
         return {
+          name,
           formattedName:
-            name.charAt(0).toUpperCase() + name.substr(1).toLowerCase(),
+            name === 'DEVELOPMENT'
+              ? '1% / Opt-In'
+              : name.charAt(0).toUpperCase() + name.substr(1).toLowerCase(),
           selected: name === serviceType ? 'selected' : '',
         };
       });
       const currentServiceType = serviceTypeList.filter(
         ({selected}) => selected
-      )[0].formattedName;
+      )[0];
 
       const viewData = Object.assign(errorList, {
         currentServiceType,
