@@ -40,6 +40,7 @@
     }
     .threshold-form {
       display: inline-block;
+      margin-bottom: 10px;
     }
     .threshold-form input[name=threshold] {
       width: 75px;
@@ -95,6 +96,15 @@
       All listed errors occur at least {{serviceTypeThreshold}}x/day, which is the equivalent of {{normalizedThreshold}}x/day in production.
     </p>
 
+    <strong>Frequency threshold:</strong>
+    <form method="GET" class="threshold-form">
+      <input type="number" name="threshold" value="{{serviceTypeThreshold}}">
+      <input type="hidden" name="serviceType" value="{{currentServiceType.name}}">
+      <button type="submit" class="button-blue">Update</button>
+    </form>
+    <a href="?serviceType={{currentServiceType.name}}"><button>Reset</button></a>
+    <br>
+
     <strong>Other service types:</strong>
     {{#serviceTypeList}}
     <a href="?serviceType={{name}}&normalizedThreshold={{normalizedThreshold}}"
@@ -103,15 +113,6 @@
       <button>{{formattedName}}</button>
     </a>
     {{/serviceTypeList}}
-
-    <br>
-    <strong>Frequency threshold:</strong>
-    <form method="GET" class="threshold-form">
-      <input type="number" name="threshold" value="{{serviceTypeThreshold}}">
-      <input type="hidden" name="serviceType" value="{{currentServiceType.name}}">
-      <button type="submit" class="button-blue">Update</button>
-    </form>
-    <a href="?serviceType={{currentServiceType.name}}"><button>Reset</button></a>
   </header>
 
   {{#errorReports}}
