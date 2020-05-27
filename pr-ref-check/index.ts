@@ -32,24 +32,32 @@ express()
       '*',
     ],
     async (req, res) => {
-      const {ref} = req.params;
-      const prNumber = Number(req.params.prNumber);
-      if (!ref || !prNumber) {
+      let {ref, prNumber} = req.params;
+      // Allow either ordering of
+      if (prNumber && ref && prNumber.length > ref.length) {
+        const tmp = prNumber;
+        prNumber = ref;
+        ref = tmp;
+      }
+      const prNum = Number(prNumber);
+
+      if (!ref || !prNum) {
         res.status(400);
         res.send(
-          'Path should be of the form <code>/pr/:prNumber/ref/:ref</code> or ' +
-            '<code>/:prNumber/:ref</code>'
+          'Path should be of the form <code>/pr/:prNum/ref/:ref</code> or ' +
+            '<code>/:prNum/:ref</code>'
         );
         return;
       }
 
-      const prUrl = `https://github.com/${GITHUB_REPO}/pulls/${prNumber}`;
+      const prUrl = `https://github.com/${GITHUB_REPO}/pulls/${prNum}`;
       const refUrl = `https://github.com/${GITHUB_REPO}/commits/${ref}`;
+      const isInRef = await isPrInRef(ref, prNum);
 
       res.send(
-        `<h1>${(await isPrInRef(ref, prNumber)) ? 'YES' : 'NO'}</h1>
+        `<h1>${isInRef ? 'YES' : 'NO'}</h1>
         <h2>
-          <a href="${prUrl}">#${prNumber}</a> is in
+          <a href="${prUrl}">#${prNum}</a> ${isInRef ? 'is' : 'is not'} in
           <a href="${refUrl}"><code>${ref}</code></a>
         </h2>`
       );
