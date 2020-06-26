@@ -41,7 +41,7 @@ steps:
       - package.json
       - dist/
 
-  # Deploy the app.
+  # Deploy the app and cron task.
   - name: gcr.io/cloud-builders/gcloud
     dir: invite
     args:
@@ -52,6 +52,16 @@ steps:
       - invite-bot
       - --entry-point
       - probot
+  - name: gcr.io/cloud-builders/gcloud
+    dir: invite
+    args:
+      - functions
+      - deploy
+      - --source
+      - dist/
+      - invite-bot
+      - --entry-point
+      - cron
 
 # These secrets are the base64-encoded form of encrypted secret values. They are
 # automatically decrypted and added to the `.env` environment at build time.
