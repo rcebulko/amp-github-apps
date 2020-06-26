@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-import {serverless} from '@probot/serverless-gcf';
-import appFn from './app';
-import cronHandler from './cron';
+import {InvitationRecord} from './src/invitation_record';
+import {dbConnect} from './src/db';
 
-module.exports.probot = serverless(appFn);
-module.exports.cron = cronHandler;
+export default async function cronHandler(): Promise<void> {
+  await new InvitationRecord(dbConnect()).expireInvites();
+}
