@@ -21,6 +21,11 @@ export const InviteAction: Record<string, InviteActionType> = {
   INVITE: 'invite',
   INVITE_AND_ASSIGN: 'invite_and_assign',
 };
+const EXPIRATION_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000;
+
+function expirationDate() {
+  return new Date(Date.now() - EXPIRATION_INTERVAL_MS);
+}
 
 /**
  * A record of invites sent by the bot that may require follow-up actions.
@@ -53,7 +58,7 @@ export class InvitationRecord {
       // PostgresQL stores booleans as TINYINT, so we cast it to boolean.
       invite.archived = !!invite.archived;
       // PostgresQL returns timestamps as strings, so we wrap in a Date.
-      invite.timestamp = new Date(invite.timestamp);
+      invite.created_at = new Date(invite.created_at);
       return invite;
     });
   }
@@ -65,5 +70,15 @@ export class InvitationRecord {
   async archiveInvites(username: string): Promise<void> {
     this.logger.info(`archiveInvites: Archiving invites to @${username}`);
     await this.db('invites').where({username}).update({archived: true});
+  }
+
+  /**
+   * Archive invites that have been expired by GitHub (over a week old).
+   */
+  async expireInvites(): Promise<void> {
+    this.logger.info(`expireInvites: Archiving invites older than 7 days`);
+    await this.db('invites')
+      .where('created_at', '<', expirationDate().toISOString())
+      .update({archived: true});
   }
 }

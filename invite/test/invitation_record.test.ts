@@ -21,6 +21,9 @@ import {InvitationRecord, InviteAction} from '../src/invitation_record';
 import {Invite} from 'invite-bot';
 import {setupDb} from '../src/setup_db';
 
+const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+const EIGHT_DAYS_AGO = new Date(Date.now() - 8 * ONE_DAY_MS);
+
 describe('invitation record', () => {
   const db: Database = Knex({
     client: 'sqlite3',
@@ -41,6 +44,13 @@ describe('invitation record', () => {
     action: InviteAction.INVITE,
   };
   const archivedInvite: Invite = Object.assign({archived: true}, invite);
+  const expiredInvite: Invite = {
+    username: 'someone',
+    repo: 'test_repo',
+    issue_number: 42,
+    action: InviteAction.INVITE,
+    created_at: EIGHT_DAYS_AGO.toISOString().replace('Z', '').replace('T', ' '),
+  };
 
   beforeAll(async () => setupDb(db));
   afterAll(async () => db.destroy());
@@ -117,6 +127,28 @@ describe('invitation record', () => {
         expect(record.getInvites('someone')).resolves.toEqual([]);
         const invites = await db('invites').select();
         expect(invites[0].archived).toBeTruthy();
+        expect(invites[1].archived).toBeTruthy();
+
+        done();
+      });
+    });
+  });
+
+  describe('expireInvites', () => {
+    describe('if records exist older than 7 days', () => {
+      beforeEach(async () => {
+        await record.recordInvite(invite);
+        await record.recordInvite(expiredInvite);
+      });
+
+      it('updates the invite records', async done => {
+        await record.expireInvites();
+
+        expect(record.getInvites('someone')).resolves.toEqual([
+          expect.objectContaining(invite),
+        ]);
+        const invites = await db('invites').select();
+        expect(invites[0].archived).toBeFalsy();
         expect(invites[1].archived).toBeTruthy();
 
         done();
