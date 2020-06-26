@@ -75,6 +75,8 @@ Setup
    * The value for `DB_UNIX_SOCKET` will be `/cloudsql/[CLOUD_SQL_INSTANCE_NAME]`; the instance name can be found on the [Instances page](https://pantheon.corp.google.com/sql/instances) and is of the form `project-name:region:database-instance-name`
 10. Create the database tables by running `npm run setup-db`
 
+> TODO(rcebulko): Add documentation for configuring a Cloud Scheduler task to run the cron task for expiring invites (see [relevant docs](https://pantheon.corp.google.com/sql/instances/invite-bot-db/overview))
+
 Local Development
 -----------------
 
